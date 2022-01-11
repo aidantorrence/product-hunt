@@ -5,25 +5,32 @@ import { PrismaClient } from "@prisma/client";
 
 export const getStaticProps: GetStaticProps = async () => {
 	const prisma = new PrismaClient();
-	const snippets = await prisma.codeSnippet.findMany();
+  const snippet = await prisma.codesnippets.findMany();
+
+  const serializedSnippets = snippet.map(codeSnippet => {
+    return {
+    ...codeSnippet, createdAt: codeSnippet?.createdAt.toISOString(),
+    };
+  });
+
 	return {
-		props: { snippets },
+    props: { serializedSnippets },
 	};
+  
 };
 
 interface Snippet {
     id: String;
-    createdAt: Date;
+    createdAt: String;
     title: String;
     prompt: String;
     language: String;
     category: String;
     difficulty: String;
     solution: String;
-    solved: Boolean[];
   }
 interface Props {
-  snippets: Snippet[]
+  snippet: Snippet;
 }
 
 const Home: NextPage<Props> = (props) => {

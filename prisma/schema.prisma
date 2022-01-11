@@ -8,14 +8,14 @@ datasource db {
   url      = env("CONNECTION_URL")
 }
 
-model CodeSnippet {
-  id         String    @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  createdAt  DateTime  @default(now())
-  title      String
-  prompt     String
-  language   String
+model codesnippets {
+  id         String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  v          Int      @map("__v")
   category   String
+  createdAt  DateTime @db.Date
   difficulty String
+  language   String
+  prompt     String
   solution   String
-  solved     Boolean[]
+  title      String
 }

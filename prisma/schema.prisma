@@ -1,0 +1,21 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["mongoDb"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("CONNECTION_URL")
+}
+
+model CodeSnippet {
+  id         String    @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  createdAt  DateTime  @default(now())
+  title      String
+  prompt     String
+  language   String
+  category   String
+  difficulty String
+  solution   String
+  solved     Boolean[]
+}

@@ -2,21 +2,45 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { GetStaticProps } from "next";
 import { PrismaClient } from "@prisma/client";
+import { GraphQLClient, gql } from 'graphql-request'
 
 export const getStaticProps: GetStaticProps = async () => {
-	const prisma = new PrismaClient();
-  const snippet = await prisma.codesnippets.findMany();
+  //product hunt fetch
+	const endpoint = "https://api.producthunt.com/v2/api/graphql";
+	const graphQLClient = new GraphQLClient(endpoint, {
+		headers: {
+			authorization: `Bearer ${process.env.DEV_TOKEN}`,
+		},
+	});
+	const query = gql`
+		{
+			posts(postedAfter: "2022-01-11T02:42:00.843Z", order: VOTES) {
+				edges {
+					node {
+						tagline
+						votesCount
+						website
+						description
+					}
+				}
+			}
+		}
+	`;
+	const productHuntPosts = await graphQLClient.request(query);
 
-  const serializedSnippets = snippet.map(codeSnippet => {
-    return {
-    ...codeSnippet, createdAt: codeSnippet?.createdAt.toISOString(),
-    };
-  });
+  //prisma mongoDb fetch
+	const prisma = new PrismaClient();
+	const snippet = await prisma.codesnippets.findMany();
+
+	const serializedSnippets = snippet.map(codeSnippet => {
+	  return {
+	  ...codeSnippet, createdAt: codeSnippet?.createdAt.toISOString(),
+	  };
+	});
 
 	return {
-    props: { serializedSnippets },
+		props: { productHuntPosts, serializedSnippets },
 	};
-  
 };
 
 interface Snippet {

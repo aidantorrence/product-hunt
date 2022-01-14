@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import fetchTweets from '../../utils/fetchLoop'
+import fetchTweets from '../../requests/fetchLoop'
 
 export default async function handler(
   req: NextApiRequest,

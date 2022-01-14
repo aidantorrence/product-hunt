@@ -2,10 +2,9 @@
 import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useEffect, useState } from "react";
-import fetchTweets from "../utils/fetchLoop";
+import fetchTweets from "../requests/fetchLoop";
 
 export const getStaticProps: GetStaticProps = async () => {
-	const pagination_token: string = "";
 	const res = await fetch(
 		`https://api.twitter.com/2/lists/1362775113075208195/tweets?tweet.fields=author_id&user.fields=username&expansions=author_id`,
 		{

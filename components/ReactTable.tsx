@@ -1,7 +1,6 @@
 /* eslint-disable react/jsx-key */
 import { useMemo } from "react";
 import { useTable, usePagination } from "react-table";
-import { Post } from "../interfaces";
 
 function Table({ columns, data }: { columns: any; data: any }) {
 	// Use the state and functions returned from useTable to build your UI
@@ -27,7 +26,7 @@ function Table({ columns, data }: { columns: any; data: any }) {
 		{
 			columns,
 			data,
-			initialState: { pageIndex: 2 },
+			initialState: { pageIndex: 0 },
 		},
 		usePagination
 	);
@@ -110,16 +109,16 @@ function Table({ columns, data }: { columns: any; data: any }) {
 	);
 }
 
-export default function ReactTable({ posts }: { posts: Post[] }) {
+export default function ReactTable({ posts }: any) {
 	const columns = useMemo(
 		() => [
 			{
-				Header: "Votes",
-				accessor: "votesCount",
+				Header: "User",
+				accessor: "author",
 			},
 			{
-				Header: "Tagline",
-				accessor: "tagline",
+				Header: "Tweet",
+				accessor: "text",
 			},
 		],
 		[]

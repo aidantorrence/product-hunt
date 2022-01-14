@@ -51,7 +51,7 @@ export const getStaticProps: GetStaticProps = async () => {
 	};
 };
 
-const Home: NextPage<Props> = ({ snippet, productHuntPosts }) => {
+const Home: NextPage<Props> = ({ productHuntPosts }) => {
 	const posts: Post[] = productHuntPosts.posts.edges.map((edge: { node: Post[] }) => edge.node);
 	return (
 		<>

@@ -1,10 +1,10 @@
 import type { NextPage } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import { GetStaticProps } from "next";
 import { PrismaClient } from "@prisma/client";
 import { GraphQLClient, gql } from "graphql-request";
 import { Post, Props } from "../interfaces";
-import ReactTable from "../components/ReactTable";
 
 export const getStaticProps: GetStaticProps = async () => {
 	//product hunt fetch
@@ -15,7 +15,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
 	const graphQLClient = new GraphQLClient(endpoint, {
 		headers: {
-			authorization: `Bearer ${process.env.DEV_TOKEN}`,
+			authorization: `Bearer ${process.env.PRODUCT_HUNT_TOKEN}`,
 		},
 	});
 	const query = gql`
@@ -76,7 +76,9 @@ const Home: NextPage<Props> = ({ snippet, productHuntPosts }) => {
 					))}
 				</div>
 			</div>
-
+			<Link href="/twitter">
+				<a>Twitter List</a>
+			</Link>
 			{/* <ReactTable posts={posts} /> */}
 		</>
 	);

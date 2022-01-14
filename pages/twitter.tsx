@@ -18,8 +18,8 @@ export const getStaticProps: GetStaticProps = async () => {
 
 	const authorDict = {} as { [key: string]: string };
 
-	posts.includes.users.forEach((user: any) => {
-		authorDict[user.id] = user.name;
+	posts?.includes?.users?.forEach((user: any) => {
+		authorDict[user?.id] = user?.name;
 	});
 	posts.data.forEach((post: any) => {
 		post.author = authorDict[post.author_id];
@@ -70,7 +70,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 	// }, [next_token]);
 
 	return (
-		<table className="flex flex-col m-auto w-6/12">
+		<table className="flex flex-col m-auto max-w-4xl">
 			<tr>
 				<th className="pl-8 w-64">User</th>
 				<th>Tweet</th>

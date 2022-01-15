@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   reactStrictMode: true,
-  env: {
-    customKey: 'my-value',
-  },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if

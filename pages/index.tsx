@@ -3,7 +3,6 @@ import Head from "next/head";
 import Link from "next/link";
 import { GetStaticProps } from "next";
 import { PrismaClient } from "@prisma/client";
-import { GraphQLClient, gql } from "graphql-request";
 import { Post, Props } from "../interfaces";
 import productHuntFetch from "../requests/productHuntFetch";
 

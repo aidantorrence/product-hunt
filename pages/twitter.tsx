@@ -22,7 +22,7 @@ export const getStaticProps: GetStaticProps = async () => {
 	posts?.includes?.users?.forEach((user: any) => {
 		authorDict[user?.id] = user?.name;
 	});
-	posts.data.forEach((post: any) => {
+	posts?.data?.forEach((post: any) => {
 		post.author = authorDict[post.author_id];
 	});
 

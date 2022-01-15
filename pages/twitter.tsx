@@ -2,7 +2,6 @@
 import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useEffect, useState } from "react";
-import fetchTweets from "../requests/fetchLoop";
 import { getFirstTwoWords } from "../utils/stringManipulation";
 import { getWithExpiry, setWithExpiry } from "../utils/localStorage";
 
@@ -32,20 +31,19 @@ export const getStaticProps: GetStaticProps = async () => {
 };
 
 const twitter: NextPage = ({ posts, next_token }: any) => {
-	const [extraPosts, setExtraPosts] = useState([] as any);
+	const [allTweets, setAllTweets] = useState(posts);
 	const [count, setCount] = useState(0);
 
 	useEffect(() => {
 		async function fetchTweets() {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
-			const posts = await response.json();
-			setExtraPosts(posts);
-			setWithExpiry("tweets", posts, 12);
+			const fetchedPosts = await response.json();
+			setAllTweets((tweets: any) => [...tweets, ...fetchedPosts]);
+			setWithExpiry("tweets", fetchedPosts, 12);
 		}
-
-		const tweets = getWithExpiry("tweets");
-		if (tweets) {
-			setExtraPosts(tweets);
+		const cachedTweets = getWithExpiry("tweets");
+		if (cachedTweets) {
+			setAllTweets((tweets: any) => [...tweets, ...cachedTweets]);
 		} else {
 			fetchTweets();
 		}
@@ -65,7 +63,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 
 	useEffect(() => {
 		scrollTo(0, Number(localStorage.getItem("scroll")) ?? 0);
-	}, [extraPosts]);
+	}, [allTweets]);
 
 	return (
 		<table className="flex flex-col m-auto max-w-4xl">
@@ -73,13 +71,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 				<th className="pl-8 w-64">User</th>
 				<th>Tweet</th>
 			</tr>
-			{posts.map((post: any) => (
-				<tr className="py-2" key={post.id}>
-					<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
-					<td className="text-xl">{post.text}</td>
-				</tr>
-			))}
-			{extraPosts.map((post: any) => (
+			{allTweets.map((post: any) => (
 				<tr className="py-2" key={post.id}>
 					<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
 					<td className="text-xl">{post.text}</td>

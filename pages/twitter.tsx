@@ -33,16 +33,17 @@ export const getStaticProps: GetStaticProps = async () => {
 
 const twitter: NextPage = ({ posts, next_token }: any) => {
 	const [extraPosts, setExtraPosts] = useState([] as any);
+	const [count, setCount] = useState(0);
 
 	useEffect(() => {
 		async function fetchTweets() {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
 			const posts = await response.json();
 			setExtraPosts(posts);
-			setWithExpiry('tweets', posts, 12);
+			setWithExpiry("tweets", posts, 12);
 		}
 
-		const tweets = getWithExpiry('tweets');
+		const tweets = getWithExpiry("tweets");
 		if (tweets) {
 			setExtraPosts(tweets);
 		} else {
@@ -50,31 +51,21 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 		}
 	}, [next_token]);
 
-	// async function fetchTweets(token: string) {
-	//     let loops = 0;
-	//     const posts = [];
-	//     while (loops < 3) {
-	//         try {
-	//             const response = await fetch(
-	//                 `https://api.twitter.com/2/lists/1362775113075208195/tweets?tweet.fields=author_id&user.fields=username&expansions=author_id`,
-	//                 {
-	//                     headers: {
-	//                         Authorization: `Bearer ${process.env.NEXT_PUBLIC_TWITTER_TOKEN}`,
-	//                     },
-	//                 }
-	//             );
-	//             const newPosts = await response.json();
-	//             posts.push(...newPosts);
-	//             token = newPosts.pagination.next_token;
-	//         } catch (error) {
-	//             console.log(error);
-	//         }
-	//         loops++;
-	//     }
-	//     setExtraPosts(posts);
-	// }
-	// fetchTweets(next_token);
-	// }, [next_token]);
+	useEffect(() => {
+		function handleScroll() {
+			console.log(count);
+			setCount((count) => count + 1);
+			if (count % 2 === 0 && count !== 0) {
+				localStorage.setItem("scroll", String(window["scrollY"]));
+			}
+		}
+		addEventListener("scroll", handleScroll);
+		return () => removeEventListener("scroll", handleScroll);
+	}, [count]);
+
+	useEffect(() => {
+		scrollTo(0, Number(localStorage.getItem("scroll")) ?? 0);
+	}, [extraPosts]);
 
 	return (
 		<table className="flex flex-col m-auto max-w-4xl">
@@ -95,22 +86,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 				</tr>
 			))}
 		</table>
-		// <div className="flex flex-row items-center justify-center">
-		// 	<div className="">
-		// 		<div className=" text-center">User</div>
-		// 		{posts.map((post: any) => (
-		// 			<div className=" text-center" key={post.id}>
-		// 				{post.author}
-		// 			</div>
-		// 		))}
-		// 	</div>
-		// 	<div className=" pl-8">
-		// 		<div className=" text-center">Post</div>
-		// 		{posts.map((post: any) => (
-		// 			<div key={post.id}>{post.text}</div>
-		// 		))}
-		// 	</div>
-		// </div>
+
 		// <ReactTable posts={posts} />
 	);
 };

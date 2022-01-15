@@ -3,6 +3,8 @@ import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useEffect, useState } from "react";
 import fetchTweets from "../requests/fetchLoop";
+import { getFirstTwoWords } from "../utils/stringManipulation";
+import { getWithExpiry, setWithExpiry } from "../utils/localStorage";
 
 export const getStaticProps: GetStaticProps = async () => {
 	const res = await fetch(
@@ -36,10 +38,16 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 		async function fetchTweets() {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
 			const posts = await response.json();
-			console.log("anything?", posts);
 			setExtraPosts(posts);
+			setWithExpiry('tweets', posts, 12);
 		}
-		fetchTweets();
+
+		const tweets = getWithExpiry('tweets');
+		if (tweets) {
+			setExtraPosts(tweets);
+		} else {
+			fetchTweets();
+		}
 	}, [next_token]);
 
 	// async function fetchTweets(token: string) {
@@ -76,15 +84,14 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 			</tr>
 			{posts.map((post: any) => (
 				<tr className="py-2" key={post.id}>
-					<td className="pl-8 w-64 text-lg">{post.author}</td>
-					<td>{post.text}</td>
+					<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
+					<td className="text-xl">{post.text}</td>
 				</tr>
 			))}
-			0000000000
 			{extraPosts.map((post: any) => (
 				<tr className="py-2" key={post.id}>
-					<td className="pl-8 w-64 text-lg">{post.author}</td>
-					<td>{post.text}</td>
+					<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
+					<td className="text-xl">{post.text}</td>
 				</tr>
 			))}
 		</table>

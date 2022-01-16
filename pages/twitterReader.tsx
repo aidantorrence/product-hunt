@@ -174,7 +174,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 											className={styles.hiddenIFrame}
 											src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}
 										></iframe>
-										<div className={styles.tweet}>{allTweets[currentTweet]?.text}</div>
+										<div className={[styles.tweet, 'max-w-5xl'].join(' ')}>{allTweets[currentTweet]?.text}</div>
 									</div>
 								</>
 							)}

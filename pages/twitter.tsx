@@ -57,7 +57,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 			setCount((count) => count + 1);
 			if (count % 2 === 0 && count !== 0) {
 				for (const location of locationsRef.current) {
-					if (location.getBoundingClientRect().top + window.scrollY > window.scrollY) {
+					if (location?.getBoundingClientRect().top + window.scrollY > window.scrollY) {
 						localStorage.setItem('scrollId', location.id);
 						console.log('scrollId', location.id)
 						break
@@ -72,7 +72,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 	useEffect(() => {
 		const scrollId = localStorage.getItem('scrollId');
 		for (const location of locationsRef.current) {
-			if (location.id === scrollId) {
+			if (location?.id === scrollId) {
 				location.scrollIntoView();
 				break
 			}

@@ -8,7 +8,7 @@ import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../uti
 import styles from "./twitterReader.module.css";
 
 export const WORDS_PER_TWEET = 1;
-const DEFAULT_TWEET_SPEED = 10;
+const DEFAULT_TWEET_SPEED = 8;
 const HOVER_TWEET_SPEED = 3;
 
 export const getStaticProps: GetStaticProps = async () => {

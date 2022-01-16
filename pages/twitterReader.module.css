@@ -2,7 +2,11 @@
 	display: none;
 	transform-origin: 0 0;
     width: 500px;
-    height: 1000px;
+    height: 700px;
+	position: fixed;
+	top: 60%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 .iFrameAndTweet:hover .hiddenIFrame {

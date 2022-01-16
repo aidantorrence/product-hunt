@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { getFirstTwoWords } from "../utils/stringManipulation";
 import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import router from "next/router";
+import { useRouter } from "next/router";
 
 export const getStaticProps: GetStaticProps = async () => {
 	const res = await fetch(
@@ -35,6 +36,8 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 	const [allTweets, setAllTweets] = useState(posts);
 	const [count, setCount] = useState(0);
 	const locationsRef: any = useRef([]);
+	const router = useRouter();
+	const { id: queryId } = router.query;
 
 	useEffect(() => {
 		async function fetchTweets() {
@@ -72,12 +75,12 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 	useEffect(() => {
 		const scrollId = localStorage.getItem('scrollId');
 		for (const location of locationsRef.current) {
-			if (location?.id === scrollId) {
+			if (queryId ? location?.id === queryId : location?.id === scrollId) {
 				location.scrollIntoView();
 				break
 			}
 		};
-	}, [allTweets]);
+	}, [allTweets, queryId]);
 
 	function handlePostClick (e:any) {
 		router.push(

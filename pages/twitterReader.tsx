@@ -6,6 +6,7 @@ import { useRouter } from "next/router";
 import { getFirstTwoWords, getWords } from "../utils/stringManipulation";
 import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import styles from "./twitterReader.module.css";
+import router from "next/router";
 
 export const WORDS_PER_TWEET = 1;
 const DEFAULT_TWEET_SPEED = 8;
@@ -44,8 +45,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 	const [currentTweetSpeed, setCurrentTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
 	const [prevTweetSpeed, setPrevTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
 	const router = useRouter();
-    const { id: queryId } = router.query;
-    console.log(queryId, router)
+	const { id: queryId } = router.query;
 
 	const handleStart = useCallback(() => {
 		if (
@@ -94,7 +94,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		} else {
 			fetchTweets();
 		}
-	}, [next_token]);
+	}, [next_token, queryId]);
 
 	useEffect(() => {
 		let interval: any;
@@ -128,8 +128,16 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		setCurrentPlaceInTweet(0);
 	}
 
-	function handleHoverSpeed() {
-		setCurrentTweetSpeed(currentTweetSpeed !== HOVER_TWEET_SPEED ? HOVER_TWEET_SPEED : DEFAULT_TWEET_SPEED);
+	function handleMouseEnter() {
+		if (isPlaying) {
+			setPrevTweetSpeed(currentTweetSpeed);
+			setCurrentTweetSpeed(HOVER_TWEET_SPEED);
+		}
+	}
+	function handleMouseOut() {
+		if (isPlaying) {
+			setCurrentTweetSpeed(prevTweetSpeed);
+		}
 	}
 
 	function decreaseSpeed() {
@@ -137,6 +145,15 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 	}
 	function increaseSpeed() {
 		setCurrentTweetSpeed(currentTweetSpeed + 1);
+	}
+	function handleBackTwitter (e:any) {
+		router.push(
+			{
+			  pathname: '/twitter',
+			  query: {id: allTweets[currentTweet].id}
+			},
+			'/twitter',
+		  );
 	}
 
 	return (
@@ -146,7 +163,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 				<div className="flex flex-col mt-64 items-center h-screen ">
 					<div className="flex flex-row justify-center">
 						<button onClick={handleBack} className="w-64">
-							Go Back
+							Prev
 						</button>
 						<button onClick={decreaseSpeed}> Decrease </button>
 						<button onClick={handlePlay} className="w-64">
@@ -154,16 +171,12 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 						</button>
 						<button onClick={increaseSpeed}> Increase </button>
 						<button onClick={handleForward} className="w-64">
-							Go Forward
+							Next
 						</button>
 					</div>
 					<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 
-					<div
-						className="text-6xl text-center p-5 mt-5"
-						onMouseEnter={handleHoverSpeed}
-						onMouseLeave={handleHoverSpeed}
-					>
+					<div className="text-6xl text-center p-5 mt-5" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseOut}>
 						<div>
 							{isPlaying ? (
 								getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)
@@ -174,12 +187,13 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 											className={styles.hiddenIFrame}
 											src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}
 										></iframe>
-										<div className={[styles.tweet, 'max-w-5xl'].join(' ')}>{allTweets[currentTweet]?.text}</div>
+										<div className={[styles.tweet, "max-w-5xl"].join(" ")}>{allTweets[currentTweet]?.text}</div>
 									</div>
 								</>
 							)}
 						</div>
 					</div>
+					<button onClick={handleBackTwitter}>back to twitter</button>
 				</div>
 			</div>
 		</>

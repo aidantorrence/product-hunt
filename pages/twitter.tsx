@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { GetStaticProps } from "next";
 import type { NextPage } from "next";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getFirstTwoWords } from "../utils/stringManipulation";
 import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 
@@ -33,6 +33,7 @@ export const getStaticProps: GetStaticProps = async () => {
 const twitter: NextPage = ({ posts, next_token }: any) => {
 	const [allTweets, setAllTweets] = useState(posts);
 	const [count, setCount] = useState(0);
+	const locationsRef: any = useRef([]);
 
 	useEffect(() => {
 		async function fetchTweets() {
@@ -54,7 +55,14 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 			console.log(count);
 			setCount((count) => count + 1);
 			if (count % 2 === 0 && count !== 0) {
-				localStorage.setItem("scroll", String(window["scrollY"]));
+				// localStorage.setItem("scroll", String(window["scrollY"]));
+				for (const location of locationsRef.current) {
+					if (location.getBoundingClientRect().top + window.scrollY > window.scrollY) {
+						localStorage.setItem('scrollId', location.id);
+						console.log('scrollId', location.id)
+						break
+					}
+				};
 			}
 		}
 		addEventListener("scroll", handleScroll);
@@ -62,7 +70,14 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 	}, [count]);
 
 	useEffect(() => {
-		scrollTo(0, Number(localStorage.getItem("scroll")) ?? 0);
+		// scrollTo(0, Number(localStorage.getItem("scroll")) ?? 0);
+		const scrollId = localStorage.getItem('scrollId');
+		for (const location of locationsRef.current) {
+			if (location.id === scrollId) {
+				location.scrollIntoView();
+				break
+			}
+		};
 	}, [allTweets]);
 
 	return (
@@ -72,10 +87,10 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 					<th className="pl-8 w-64">User</th>
 					<th>Tweet</th>
 				</tr>
-				{allTweets.slice().reverse().map((post: any) => (
+				{allTweets.slice().reverse().map((post: any, idx: any) => (
 					<tr className="py-2" key={post.id}>
 						<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
-						<td className="text-xl">{post.text}</td>
+						<td id={post.id} ref={el => locationsRef.current[idx] = el} className="text-xl">{post.text}</td>
 					</tr>
 				))}
 			</tbody>

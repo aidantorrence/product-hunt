@@ -54,7 +54,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		) {
 			setCurrentPlaceInTweet(currentPlaceInTweet + WORDS_PER_TWEET);
 		} else {
-			localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
+			if (allTweets[currentTweet - 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
 			setCurrentTweet(currentTweet - 1);
 			setCurrentPlaceInTweet(0);
 		}
@@ -67,15 +67,15 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 			setAllTweets((tweets: any) => {
 				const res = [...tweets, ...fetchedPosts];
 				const currentTweetId = localStorage.getItem("currentTweetId");
-				res.forEach((tweet: any, idx: number) => {
-					if (queryId ? tweet.id === queryId : tweet.id === currentTweetId) {
-						setCurrentTweet(idx);
+				for (let i = 0; i < res.length; i++) {
+					if (queryId ? res[i].id === queryId : res[i].id === currentTweetId) {
+						setCurrentTweet(i);
+						return res
 					}
-				});
-				setCurrentTweet((idx) => idx || res.length - 1);
+				}
+				setCurrentTweet(res.length - 1);
 				return res;
 			});
-			setWithExpiry("tweets", fetchedPosts, 12);
 			setWithToken("tweets", fetchedPosts, next_token);
 		}
 		const cachedTweets = getWithToken("tweets", next_token);
@@ -83,12 +83,13 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 			setAllTweets((tweets: any) => {
 				const res = [...tweets, ...cachedTweets];
 				const currentTweetId = localStorage.getItem("currentTweetId");
-				res.forEach((tweet: any, idx: number) => {
-					if (queryId ? tweet.id === queryId : tweet.id === currentTweetId) {
-						setCurrentTweet(idx);
+				for (let i = 0; i < res.length; i++) {
+					if (queryId ? res[i].id === queryId : res[i].id === currentTweetId) {
+						setCurrentTweet(i);
+						return res
 					}
-				});
-				setCurrentTweet((idx) => idx || res.length - 1);
+				}
+				setCurrentTweet(res.length - 1);
 				return res;
 			});
 		} else {
@@ -98,7 +99,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 
 	useEffect(() => {
 		let interval: any;
-		if (isPlaying) {
+		if (isPlaying && currentTweet >= 0) {
 			interval = setInterval(
 				() => {
 					handleStart();
@@ -118,12 +119,14 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 	}
 
 	function handleBack() {
-		localStorage.setItem("currentTweetId", allTweets[currentTweet + 1]?.id);
+		setIsPlaying(false);
+		if (allTweets[currentTweet + 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet + 1]?.id);
 		setCurrentTweet(currentTweet + 1);
 		setCurrentPlaceInTweet(0);
 	}
 	function handleForward() {
-		localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
+		setIsPlaying(false);
+		if (allTweets[currentTweet - 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
 		setCurrentTweet(currentTweet - 1);
 		setCurrentPlaceInTweet(0);
 	}
@@ -150,7 +153,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		router.push(
 			{
 			  pathname: '/twitter',
-			  query: {id: allTweets[currentTweet].id}
+			  query: {id: allTweets[currentTweet]?.id || ''}
 			},
 			'/twitter',
 		  );
@@ -162,17 +165,20 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 				<div className="divider pt-5"></div>
 				<div className="flex flex-col mt-64 items-center h-screen ">
 					<div className="flex flex-row justify-center">
-						<button onClick={handleBack} className="w-64">
+						<button onClick={decreaseSpeed}> Decrease </button>
+						<button onClick={handleBack} className="w-32">
 							Prev
 						</button>
-						<button onClick={decreaseSpeed}> Decrease </button>
-						<button onClick={handlePlay} className="w-64">
-							Play/Pause({currentTweetSpeed})
-						</button>
-						<button onClick={increaseSpeed}> Increase </button>
-						<button onClick={handleForward} className="w-64">
+						<div className={[styles.playpause, "flex", "flex-col", "items-center", "relative"].join(' ')}>
+							<div className={styles.tooltip} >{currentTweet + 1} tweets left</div>
+							<button onClick={handlePlay} className="w-32">
+								Play/Pause({currentTweetSpeed})
+							</button>
+						</div>
+						<button onClick={handleForward} className="w-32">
 							Next
 						</button>
+						<button onClick={increaseSpeed}> Increase </button>
 					</div>
 					<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 
@@ -187,13 +193,13 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 											className={styles.hiddenIFrame}
 											src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}
 										></iframe>
-										<div className={[styles.tweet, "max-w-5xl"].join(" ")}>{allTweets[currentTweet]?.text}</div>
+										<div className={[styles.tweet, "max-w-xl text-4xl"].join(" ")}>{allTweets[currentTweet]?.text}</div>
 									</div>
 								</>
 							)}
 						</div>
 					</div>
-					<button onClick={handleBackTwitter}>back to twitter</button>
+					{currentTweet >= 0 ? <button onClick={handleBackTwitter}>back to twitter</button> : `DONE`}
 				</div>
 			</div>
 		</>

@@ -3,7 +3,7 @@ import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useEffect, useState } from "react";
 import { getFirstTwoWords } from "../utils/stringManipulation";
-import { getWithExpiry, setWithExpiry } from "../utils/localStorage";
+import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 
 export const getStaticProps: GetStaticProps = async () => {
 	const res = await fetch(
@@ -39,9 +39,9 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
 			const fetchedPosts = await response.json();
 			setAllTweets((tweets: any) => [...tweets, ...fetchedPosts]);
-			setWithExpiry("tweets", fetchedPosts, 12);
+			setWithToken("tweets", fetchedPosts, next_token);
 		}
-		const cachedTweets = getWithExpiry("tweets");
+		const cachedTweets = getWithToken("tweets", next_token);
 		if (cachedTweets) {
 			setAllTweets((tweets: any) => [...tweets, ...cachedTweets]);
 		} else {

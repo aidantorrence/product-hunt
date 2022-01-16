@@ -3,7 +3,8 @@ import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { getFirstTwoWords, getWords } from "../utils/stringManipulation";
-import { getWithExpiry, setWithExpiry } from "../utils/localStorage";
+import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
+import styles from './twitterReader.module.css'
 
 export const WORDS_PER_TWEET = 1;
 const DEFAULT_TWEET_SPEED = 10;
@@ -71,8 +72,9 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 				return res;
 			});
 			setWithExpiry("tweets", fetchedPosts, 12);
+			setWithToken("tweets", fetchedPosts, next_token);
 		}
-		const cachedTweets = getWithExpiry("tweets");
+		const cachedTweets = getWithToken("tweets", next_token);
 		if (cachedTweets) {
 			setAllTweets((tweets: any) => {
 				const res = [...tweets, ...cachedTweets];
@@ -126,20 +128,29 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		setCurrentTweetSpeed(currentTweetSpeed !== HOVER_TWEET_SPEED ? HOVER_TWEET_SPEED : DEFAULT_TWEET_SPEED);
 	}
 
+    function decreaseSpeed() {
+        setCurrentTweetSpeed(currentTweetSpeed - 1);
+    }
+    function increaseSpeed() {
+        setCurrentTweetSpeed(currentTweetSpeed + 1);
+    }
+
 	return (
 		<>
-			<div className="" role={isPlaying ? "button" : "div"} onClick={() => isPlaying && handlePlay()}>
+			<div className="">
 				<div className="divider pt-5"></div>
 				<div className="flex flex-col mt-64 items-center h-screen ">
 					<div className="flex flex-row justify-center">
 						<button onClick={handleBack} className="w-64">
 							Go Back
 						</button>
+                        <button onClick={decreaseSpeed}> Decrease </button>
 						<button onClick={handlePlay} className="w-64">
-							Click Play
+							Play/Pause({currentTweetSpeed})
 						</button>
+                        <button onClick={increaseSpeed}> Increase </button>
 						<button onClick={handleForward} className="w-64">
-							Click Forward
+							Go Forward
 						</button>
 					</div>
 					<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
@@ -149,7 +160,20 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 						onMouseEnter={handleHoverSpeed}
 						onMouseLeave={handleHoverSpeed}
 					>
-						{isPlaying ? getWords(allTweets[currentTweet]?.text, currentPlaceInTweet) : allTweets[currentTweet]?.text}
+                        <div>
+						{isPlaying ? (
+							getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)
+						) : (
+							<>
+								<div className={[styles.iFrameAndTweet, 'flex', 'flex-col', 'items-center'].join(' ')}>
+									<iframe className={styles.hiddenIFrame} src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}></iframe>
+                                    <div className={styles.tweet}>
+								        {allTweets[currentTweet]?.text}
+                                    </div>
+								</div>
+							</>
+						)}
+                        </div>
 					</div>
 				</div>
 			</div>

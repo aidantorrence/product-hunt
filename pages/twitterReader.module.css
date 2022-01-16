@@ -17,11 +17,12 @@
 }
 
 .tooltip {
-	display: none;
+	visibility: hidden;
+	position: absolute;
 }
 
 .playpause:hover .tooltip {
-	display: block;
-	position: absolute;
+	visibility: visible;
 	top: -2rem;
+	transition-delay: .3s;
 }

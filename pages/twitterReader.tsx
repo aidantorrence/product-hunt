@@ -119,13 +119,12 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 	}
 
 	function handleBack() {
-		setIsPlaying(false);
+		if (currentTweet < 0 ) setIsPlaying(false);
 		if (allTweets[currentTweet + 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet + 1]?.id);
 		setCurrentTweet(currentTweet + 1);
 		setCurrentPlaceInTweet(0);
 	}
 	function handleForward() {
-		setIsPlaying(false);
 		if (allTweets[currentTweet - 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
 		setCurrentTweet(currentTweet - 1);
 		setCurrentPlaceInTweet(0);

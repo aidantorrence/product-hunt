@@ -2,9 +2,10 @@
 import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { getFirstTwoWords, getWords } from "../utils/stringManipulation";
 import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
-import styles from './twitterReader.module.css'
+import styles from "./twitterReader.module.css";
 
 export const WORDS_PER_TWEET = 1;
 const DEFAULT_TWEET_SPEED = 10;
@@ -42,6 +43,9 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [currentTweetSpeed, setCurrentTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
 	const [prevTweetSpeed, setPrevTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
+	const router = useRouter();
+    const { id: queryId } = router.query;
+    console.log(queryId, router)
 
 	const handleStart = useCallback(() => {
 		if (
@@ -64,7 +68,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 				const res = [...tweets, ...fetchedPosts];
 				const currentTweetId = localStorage.getItem("currentTweetId");
 				res.forEach((tweet: any, idx: number) => {
-					if (tweet.id === currentTweetId) {
+					if (queryId ? tweet.id === queryId : tweet.id === currentTweetId) {
 						setCurrentTweet(idx);
 					}
 				});
@@ -80,7 +84,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 				const res = [...tweets, ...cachedTweets];
 				const currentTweetId = localStorage.getItem("currentTweetId");
 				res.forEach((tweet: any, idx: number) => {
-					if (tweet.id === currentTweetId) {
+					if (queryId ? tweet.id === queryId : tweet.id === currentTweetId) {
 						setCurrentTweet(idx);
 					}
 				});
@@ -128,12 +132,12 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		setCurrentTweetSpeed(currentTweetSpeed !== HOVER_TWEET_SPEED ? HOVER_TWEET_SPEED : DEFAULT_TWEET_SPEED);
 	}
 
-    function decreaseSpeed() {
-        setCurrentTweetSpeed(currentTweetSpeed - 1);
-    }
-    function increaseSpeed() {
-        setCurrentTweetSpeed(currentTweetSpeed + 1);
-    }
+	function decreaseSpeed() {
+		setCurrentTweetSpeed(currentTweetSpeed - 1);
+	}
+	function increaseSpeed() {
+		setCurrentTweetSpeed(currentTweetSpeed + 1);
+	}
 
 	return (
 		<>
@@ -144,11 +148,11 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 						<button onClick={handleBack} className="w-64">
 							Go Back
 						</button>
-                        <button onClick={decreaseSpeed}> Decrease </button>
+						<button onClick={decreaseSpeed}> Decrease </button>
 						<button onClick={handlePlay} className="w-64">
 							Play/Pause({currentTweetSpeed})
 						</button>
-                        <button onClick={increaseSpeed}> Increase </button>
+						<button onClick={increaseSpeed}> Increase </button>
 						<button onClick={handleForward} className="w-64">
 							Go Forward
 						</button>
@@ -160,20 +164,21 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 						onMouseEnter={handleHoverSpeed}
 						onMouseLeave={handleHoverSpeed}
 					>
-                        <div>
-						{isPlaying ? (
-							getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)
-						) : (
-							<>
-								<div className={[styles.iFrameAndTweet, 'flex', 'flex-col', 'items-center'].join(' ')}>
-									<iframe className={styles.hiddenIFrame} src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}></iframe>
-                                    <div className={styles.tweet}>
-								        {allTweets[currentTweet]?.text}
-                                    </div>
-								</div>
-							</>
-						)}
-                        </div>
+						<div>
+							{isPlaying ? (
+								getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)
+							) : (
+								<>
+									<div className={[styles.iFrameAndTweet, "flex", "flex-col", "items-center"].join(" ")}>
+										<iframe
+											className={styles.hiddenIFrame}
+											src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}
+										></iframe>
+										<div className={styles.tweet}>{allTweets[currentTweet]?.text}</div>
+									</div>
+								</>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>

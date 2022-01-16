@@ -4,6 +4,7 @@ import type { NextPage } from "next";
 import { useEffect, useState, useRef } from "react";
 import { getFirstTwoWords } from "../utils/stringManipulation";
 import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
+import router from "next/router";
 
 export const getStaticProps: GetStaticProps = async () => {
 	const res = await fetch(
@@ -55,7 +56,6 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 			console.log(count);
 			setCount((count) => count + 1);
 			if (count % 2 === 0 && count !== 0) {
-				// localStorage.setItem("scroll", String(window["scrollY"]));
 				for (const location of locationsRef.current) {
 					if (location.getBoundingClientRect().top + window.scrollY > window.scrollY) {
 						localStorage.setItem('scrollId', location.id);
@@ -70,7 +70,6 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 	}, [count]);
 
 	useEffect(() => {
-		// scrollTo(0, Number(localStorage.getItem("scroll")) ?? 0);
 		const scrollId = localStorage.getItem('scrollId');
 		for (const location of locationsRef.current) {
 			if (location.id === scrollId) {
@@ -79,6 +78,16 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 			}
 		};
 	}, [allTweets]);
+
+	function handlePostClick (e:any) {
+		router.push(
+			{
+			  pathname: '/twitterReader',
+			  query: {id: e.target.id}
+			},
+			'/twitterReader',
+		  );
+	}
 
 	return (
 		<table className="m-auto">
@@ -90,7 +99,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 				{allTweets.slice().reverse().map((post: any, idx: any) => (
 					<tr className="py-2" key={post.id}>
 						<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
-						<td id={post.id} ref={el => locationsRef.current[idx] = el} className="text-xl">{post.text}</td>
+						<td role="button" onClick={handlePostClick} id={post.id} ref={el => locationsRef.current[idx] = el} className="text-xl">{post.text}</td>
 					</tr>
 				))}
 			</tbody>

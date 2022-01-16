@@ -93,9 +93,15 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 	useEffect(() => {
 		let interval: any;
 		if (isPlaying) {
-			interval = setInterval(() => {
-				handleStart();
-			}, !getWords(allTweets[currentTweet]?.text, currentPlaceInTweet + WORDS_PER_TWEET) ? 1000 / HOVER_TWEET_SPEED : 1000 / currentTweetSpeed);
+			interval = setInterval(
+				() => {
+					handleStart();
+				},
+				!getWords(allTweets[currentTweet]?.text, currentPlaceInTweet + WORDS_PER_TWEET) ||
+					allTweets[currentTweet]?.text.includes("RT ")
+					? 1000 / HOVER_TWEET_SPEED
+					: 1000 / currentTweetSpeed
+			);
 		}
 		return () => clearInterval(interval);
 	}, [isPlaying, handleStart, currentTweetSpeed, currentPlaceInTweet, allTweets, currentTweet]);
@@ -122,18 +128,21 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 
 	return (
 		<>
-			<button onClick={handleBack} className="w-64">
-				Go Back
-			</button>
-			<button onClick={handleForward} className="w-64">
-				Click Forward
-			</button>
 			<div className="" role={isPlaying ? "button" : "div"} onClick={() => isPlaying && handlePlay()}>
 				<div className="divider pt-5"></div>
-				<div className="flex flex-col mt-80 items-center h-screen ">
-					<div role="button" onClick={handlePlay} className=" text-4xl">
-						{getFirstTwoWords(allTweets[currentTweet]?.author)}
+				<div className="flex flex-col mt-64 items-center h-screen ">
+					<div className="flex flex-row justify-center">
+						<button onClick={handleBack} className="w-64">
+							Go Back
+						</button>
+						<button onClick={handlePlay} className="w-64">
+							Click Play
+						</button>
+						<button onClick={handleForward} className="w-64">
+							Click Forward
+						</button>
 					</div>
+					<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 
 					<div
 						className="text-6xl text-center p-5 mt-5"

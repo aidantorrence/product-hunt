@@ -45,7 +45,7 @@ export function getWithToken(key: string, token: string) {
 		return null
 	}
 	const item = JSON.parse(itemStr)
-	if (token === item.token) {
+	if (token !== item.token) {
 		return null
 	}
 	return item.value

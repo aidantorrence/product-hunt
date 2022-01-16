@@ -66,17 +66,19 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 	}, [allTweets]);
 
 	return (
-		<table className="flex flex-col m-auto max-w-4xl">
-			<tr>
-				<th className="pl-8 w-64">User</th>
-				<th>Tweet</th>
-			</tr>
-			{allTweets.map((post: any) => (
-				<tr className="py-2" key={post.id}>
-					<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
-					<td className="text-xl">{post.text}</td>
+		<table className="m-auto">
+			<tbody className="flex flex-col max-w-4xl">
+				<tr>
+					<th className="pl-8 w-64">User</th>
+					<th>Tweet</th>
 				</tr>
-			))}
+				{allTweets.slice().reverse().map((post: any) => (
+					<tr className="py-2" key={post.id}>
+						<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
+						<td className="text-xl">{post.text}</td>
+					</tr>
+				))}
+			</tbody>
 		</table>
 
 		// <ReactTable posts={posts} />

@@ -1,9 +1,13 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { GetStaticProps } from "next";
 import type { NextPage } from "next";
-import { useEffect, useState } from "react";
-import { getFirstTwoWords, getFourWords } from "../utils/stringManipulation";
+import { useCallback, useEffect, useState } from "react";
+import { getFirstTwoWords, getWords } from "../utils/stringManipulation";
 import { getWithExpiry, setWithExpiry } from "../utils/localStorage";
+
+export const WORDS_PER_TWEET = 1;
+const DEFAULT_TWEET_SPEED = 10;
+const HOVER_TWEET_SPEED = 3;
 
 export const getStaticProps: GetStaticProps = async () => {
 	const res = await fetch(
@@ -35,15 +39,35 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 	const [currentTweet, setCurrentTweet] = useState(0);
 	const [currentPlaceInTweet, setCurrentPlaceInTweet] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
+	const [currentTweetSpeed, setCurrentTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
+	const [prevTweetSpeed, setPrevTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
+
+	const handleStart = useCallback(() => {
+		if (
+			!allTweets[currentTweet]?.text.includes("RT ") &&
+			getWords(allTweets[currentTweet]?.text, currentPlaceInTweet + WORDS_PER_TWEET)
+		) {
+			setCurrentPlaceInTweet(currentPlaceInTweet + WORDS_PER_TWEET);
+		} else {
+			localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
+			setCurrentTweet(currentTweet - 1);
+			setCurrentPlaceInTweet(0);
+		}
+	}, [allTweets, currentTweet, currentPlaceInTweet]);
 
 	useEffect(() => {
-		console.log("idk");
 		async function fetchTweets() {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
 			const fetchedPosts = await response.json();
 			setAllTweets((tweets: any) => {
 				const res = [...tweets, ...fetchedPosts];
-				setCurrentTweet(res.length - 1);
+				const currentTweetId = localStorage.getItem("currentTweetId");
+				res.forEach((tweet: any, idx: number) => {
+					if (tweet.id === currentTweetId) {
+						setCurrentTweet(idx);
+					}
+				});
+				setCurrentTweet((idx) => idx || res.length - 1);
 				return res;
 			});
 			setWithExpiry("tweets", fetchedPosts, 12);
@@ -52,7 +76,13 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		if (cachedTweets) {
 			setAllTweets((tweets: any) => {
 				const res = [...tweets, ...cachedTweets];
-				setCurrentTweet(res.length - 1);
+				const currentTweetId = localStorage.getItem("currentTweetId");
+				res.forEach((tweet: any, idx: number) => {
+					if (tweet.id === currentTweetId) {
+						setCurrentTweet(idx);
+					}
+				});
+				setCurrentTweet((idx) => idx || res.length - 1);
 				return res;
 			});
 		} else {
@@ -64,63 +94,54 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		let interval: any;
 		if (isPlaying) {
 			interval = setInterval(() => {
-				if (
-					!allTweets[currentTweet]?.text.includes("RT ") &&
-					getFourWords(allTweets[currentTweet]?.text ?? "", currentPlaceInTweet + 4)
-				) {
-					setCurrentPlaceInTweet(currentPlaceInTweet + 4);
-				} else {
-					setCurrentTweet(currentTweet - 1);
-					setCurrentPlaceInTweet(0);
-				}
-			}, 1000);
+				handleStart();
+			}, !getWords(allTweets[currentTweet]?.text, currentPlaceInTweet + WORDS_PER_TWEET) ? 1000 / HOVER_TWEET_SPEED : 1000 / currentTweetSpeed);
 		}
 		return () => clearInterval(interval);
-	}, [isPlaying, allTweets, currentPlaceInTweet, currentTweet]);
-
-	function handleForward() {
-		if (
-			!allTweets[currentTweet]?.text.includes("RT ") &&
-			getFourWords(allTweets[currentTweet]?.text ?? "", currentPlaceInTweet + 4)
-		) {
-			setCurrentPlaceInTweet(currentPlaceInTweet + 4);
-		} else {
-			setCurrentTweet(currentTweet - 1);
-			setCurrentPlaceInTweet(0);
-		}
-	}
-
-	function handleBack() {
-		if (
-			!allTweets[currentTweet].text.includes("RT ") &&
-			getFourWords(allTweets[currentTweet]?.text ?? "", currentPlaceInTweet - 4)
-		) {
-			setCurrentPlaceInTweet(currentPlaceInTweet - 4);
-		} else {
-			setCurrentTweet(currentTweet + 1);
-			setCurrentPlaceInTweet(0);
-		}
-	}
+	}, [isPlaying, handleStart, currentTweetSpeed, currentPlaceInTweet, allTweets, currentTweet]);
 
 	function handlePlay() {
 		setIsPlaying(!isPlaying);
+		setCurrentPlaceInTweet(0);
+	}
+
+	function handleBack() {
+		localStorage.setItem("currentTweetId", allTweets[currentTweet + 1]?.id);
+		setCurrentTweet(currentTweet + 1);
+		setCurrentPlaceInTweet(0);
+	}
+	function handleForward() {
+		localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
+		setCurrentTweet(currentTweet - 1);
+		setCurrentPlaceInTweet(0);
+	}
+
+	function handleHoverSpeed() {
+		setCurrentTweetSpeed(currentTweetSpeed !== HOVER_TWEET_SPEED ? HOVER_TWEET_SPEED : DEFAULT_TWEET_SPEED);
 	}
 
 	return (
 		<>
-			<button onClick={handleForward} className="w-64">
-				Click Forward
-			</button>
 			<button onClick={handleBack} className="w-64">
 				Go Back
 			</button>
-			<button onClick={handlePlay} className="w-64">
-				Play/Pause
+			<button onClick={handleForward} className="w-64">
+				Click Forward
 			</button>
-			<div className="flex items-center h-screen ">
-				<div className=" ml-96 w-32 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author ?? "")}</div>
-				<div className="flex w-1/2 justify-center text-center">
-					<div className="ml-16 text-6xl">{getFourWords(allTweets[currentTweet]?.text ?? "", currentPlaceInTweet)}</div>
+			<div className="" role={isPlaying ? "button" : "div"} onClick={() => isPlaying && handlePlay()}>
+				<div className="divider pt-5"></div>
+				<div className="flex flex-col mt-80 items-center h-screen ">
+					<div role="button" onClick={handlePlay} className=" text-4xl">
+						{getFirstTwoWords(allTweets[currentTweet]?.author)}
+					</div>
+
+					<div
+						className="text-6xl text-center p-5 mt-5"
+						onMouseEnter={handleHoverSpeed}
+						onMouseLeave={handleHoverSpeed}
+					>
+						{isPlaying ? getWords(allTweets[currentTweet]?.text, currentPlaceInTweet) : allTweets[currentTweet]?.text}
+					</div>
 				</div>
 			</div>
 		</>

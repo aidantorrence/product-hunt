@@ -8,7 +8,7 @@ import styles from "./twitterReader.module.css";
 import { getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
 
 export const WORDS_PER_TWEET = 1;
-const DEFAULT_TWEET_SPEED = 8;
+const DEFAULT_TWEET_SPEED = 10;
 const HOVER_TWEET_SPEED = 3;
 
 const twitterReader: NextPage = () => {
@@ -136,7 +136,7 @@ const twitterReader: NextPage = () => {
 					</div>
 					<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 
-					<div className="text-6xl text-center p-5 mt-5" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseOut}>
+					<div className=" text-3xl text-center p-5 mt-5" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseOut}>
 						<div>
 							{isPlaying ? (
 								getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)

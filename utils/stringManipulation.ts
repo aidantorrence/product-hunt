@@ -12,7 +12,7 @@ export function getWords(text: string | undefined, placeInText: number) {
 }
 
 export function splitByNCharacters(text: string, n: number) {
-	let words = text.split(/\s+/).map((word) => {
+	let words = text.split(/[@\s]+/).map((word) => {
         if (word.toLowerCase().includes("https://")) {
             return "[LINK]";
         } else {

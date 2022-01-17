@@ -1,3 +1,5 @@
+export const EXPIRY = 3600 * 24;
+
 export function setWithExpiry(key: string, value: any, ttl: number) {
 	const now = new Date()
 
@@ -5,7 +7,7 @@ export function setWithExpiry(key: string, value: any, ttl: number) {
 	// as well as the time when it's supposed to expire
 	const item = {
 		value: value,
-		expiry: now.getTime() + ttl * 1000 * 3600,
+		expiry: now.getTime() + ttl * 1000,
 	}
 	localStorage.setItem(key, JSON.stringify(item))
 }

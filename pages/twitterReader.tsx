@@ -1,48 +1,21 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { getFirstTwoWords, getWords } from "../utils/pages/twitterReader/stringManipulation";
-import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
+import { EXPIRY, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import styles from "./twitterReader.module.css";
-import router from "next/router";
 import { getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
 
 export const WORDS_PER_TWEET = 1;
 const DEFAULT_TWEET_SPEED = 8;
 const HOVER_TWEET_SPEED = 3;
 
-export const getStaticProps: GetStaticProps = async () => {
-	const res = await fetch(
-		`https://api.twitter.com/2/lists/1362775113075208195/tweets?tweet.fields=author_id&user.fields=username&expansions=author_id`,
-		{
-			headers: {
-				Authorization: `Bearer ${process.env.TWITTER_TOKEN}`,
-			},
-		}
-	);
-	const posts = await res.json();
-
-	const authorDict = {} as { [key: string]: string };
-
-	posts?.includes?.users?.forEach((user: any) => {
-		authorDict[user?.id] = user?.name;
-	});
-	posts?.data?.forEach((post: any) => {
-		post.author = authorDict[post.author_id];
-	});
-
-	return {
-		props: { posts: posts.data, next_token: posts.meta.next_token },
-	};
-};
-
-const twitterReader: NextPage = ({ posts, next_token }: any) => {
+const twitterReader: NextPage = () => {
 	const router = useRouter();
 	const { id: queryId } = router.query;
-	const [allTweets, setAllTweets] = useState(posts);
-	const [currentTweet, setCurrentTweet] = useState(getCurrentTweet(posts, queryId));
+	const [allTweets, setAllTweets] = useState([] as any);
+	const [currentTweet, setCurrentTweet] = useState(0);
 	const [currentPlaceInTweet, setCurrentPlaceInTweet] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [currentTweetSpeed, setCurrentTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
@@ -64,20 +37,19 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 
 	useEffect(() => {
 		async function fetchTweets() {
-			const response = await fetch("/api/posts", { method: "POST", body: next_token });
+			const response = await fetch("/api/posts", { method: "POST" });
 			const fetchedPosts = await response.json();
-			const combinedPosts = [...posts, ...fetchedPosts];
-			settingTweets(setAllTweets, setCurrentTweet, combinedPosts, queryId, setIsLoading)
-			setWithToken("tweets", combinedPosts, next_token);
+			settingTweets(setAllTweets, setCurrentTweet, fetchedPosts, queryId, setIsLoading)
+			setWithExpiry("tweets", fetchedPosts, EXPIRY);
 			
 		}
-		const cachedTweets = getWithToken("tweets", next_token);
+		const cachedTweets = getWithExpiry("tweets");
 		if (cachedTweets) {
 			settingTweets(setAllTweets, setCurrentTweet, cachedTweets, queryId, setIsLoading)
 		} else {
 			fetchTweets();
 		}
-	}, [next_token, queryId, posts]);
+	}, [queryId]);
 
 	useEffect(() => {
 		let interval: any;

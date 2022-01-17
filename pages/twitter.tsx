@@ -1,39 +1,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useEffect, useState, useRef } from "react";
 import { getFirstTwoWords } from "../utils/pages/twitterReader/stringManipulation";
-import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
-import router from "next/router";
+import { EXPIRY, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import { useRouter } from "next/router";
 
-export const getStaticProps: GetStaticProps = async () => {
-	const res = await fetch(
-		`https://api.twitter.com/2/lists/1362775113075208195/tweets?tweet.fields=author_id&user.fields=username&expansions=author_id`,
-		{
-			headers: {
-				Authorization: `Bearer ${process.env.TWITTER_TOKEN}`,
-			},
-		}
-	);
-	const posts = await res.json();
-
-	const authorDict = {} as { [key: string]: string };
-
-	posts?.includes?.users?.forEach((user: any) => {
-		authorDict[user?.id] = user?.name;
-	});
-	posts?.data?.forEach((post: any) => {
-		post.author = authorDict[post.author_id];
-	});
-
-	return {
-		props: { posts: posts.data, next_token: posts.meta.next_token },
-	};
-};
-
-const twitter: NextPage = ({ posts, next_token }: any) => {
-	const [allTweets, setAllTweets] = useState(posts);
+const twitter: NextPage = () => {
+	const [allTweets, setAllTweets] = useState([] as any );
 	const [count, setCount] = useState(0);
 	const locationsRef: any = useRef([]);
 	const router = useRouter();
@@ -41,19 +14,18 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 
 	useEffect(() => {
 		async function fetchTweets() {
-			const response = await fetch("/api/posts", { method: "POST", body: next_token });
+			const response = await fetch("/api/posts", { method: "POST" });
 			const fetchedPosts = await response.json();
-			const combinedPosts  = [...posts, ...fetchedPosts];
-			setAllTweets(combinedPosts);
-			setWithToken("tweets", combinedPosts, next_token);
+			setAllTweets(fetchedPosts);
+			setWithExpiry("tweets", fetchedPosts, EXPIRY);
 		}
-		const cachedTweets = getWithToken("tweets", next_token);
+		const cachedTweets = getWithExpiry("tweets");
 		if (cachedTweets) {
 			setAllTweets(cachedTweets);
 		} else {
 			fetchTweets();
 		}
-	}, [next_token, posts]);
+	}, []);
 
 	useEffect(() => {
 		function handleScroll() {

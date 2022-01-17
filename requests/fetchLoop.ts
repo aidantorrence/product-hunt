@@ -5,7 +5,7 @@ export default async function fetchTweets(token: string) {
 	while (loops < 8) {
 		try {
 			const response = await fetch(
-				`https://api.twitter.com/2/lists/1362775113075208195/tweets?tweet.fields=author_id&user.fields=username&expansions=author_id&pagination_token=${token}`,
+				`https://api.twitter.com/2/lists/1362775113075208195/tweets?tweet.fields=author_id&user.fields=username&expansions=author_id${token ? `&pagination_token=${token}` : ''}`,
 				{
 					headers: {
 						Authorization: `Bearer ${process.env.TWITTER_TOKEN}`,

@@ -43,8 +43,9 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 		async function fetchTweets() {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
 			const fetchedPosts = await response.json();
+			const combinedPosts  = [...posts, ...fetchedPosts];
 			setAllTweets((tweets: any) => [...tweets, ...fetchedPosts]);
-			setWithToken("tweets", fetchedPosts, next_token);
+			setWithToken("tweets", combinedPosts, next_token);
 		}
 		const cachedTweets = getWithToken("tweets", next_token);
 		if (cachedTweets) {
@@ -52,7 +53,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 		} else {
 			fetchTweets();
 		}
-	}, [next_token]);
+	}, [next_token, posts]);
 
 	useEffect(() => {
 		function handleScroll() {

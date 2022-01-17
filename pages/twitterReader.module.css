@@ -1,6 +1,5 @@
 .hiddenIFrame {
-	display: none;
-	transform-origin: 0 0;
+	visibility: hidden;
     width: 500px;
     height: 350px;
 	position: fixed;
@@ -10,10 +9,12 @@
 }
 
 .iFrameAndTweet:hover .hiddenIFrame {
-	display: block;
+	visibility: visible;
+	transition-delay: .5s;
 }
 .iFrameAndTweet:hover .tweet{
 	visibility: hidden;
+	transition-delay: .5s;
 }
 
 .tooltip {

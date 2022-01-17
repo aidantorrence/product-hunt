@@ -5,11 +5,12 @@ import { useRouter } from "next/router";
 import { getFirstTwoWords, getWords } from "../utils/pages/twitterReader/stringManipulation";
 import { EXPIRY, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import styles from "./twitterReader.module.css";
-import { getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
+import { getCurrentInterval, getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
 
 export const WORDS_PER_TWEET = 1;
-const DEFAULT_TWEET_SPEED = 10;
-const HOVER_TWEET_SPEED = 3;
+export const DEFAULT_TWEET_SPEED = 10;
+export const HOVER_TWEET_SPEED = 3;
+export const PUNCTUATION_TWEET_SPEED = 6
 
 const twitterReader: NextPage = () => {
 	const router = useRouter();
@@ -58,10 +59,7 @@ const twitterReader: NextPage = () => {
 				() => {
 					handleStart();
 				},
-				!getWords(allTweets[currentTweet]?.text, currentPlaceInTweet + WORDS_PER_TWEET) ||
-					allTweets[currentTweet]?.text.includes("RT ")
-					? 1000 / HOVER_TWEET_SPEED
-					: 1000 / currentTweetSpeed
+				getCurrentInterval(allTweets, currentTweet, currentPlaceInTweet, currentTweetSpeed, getWords )
 			);
 		}
 		return () => clearInterval(interval);
@@ -136,7 +134,7 @@ const twitterReader: NextPage = () => {
 					</div>
 					<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 
-					<div className=" text-3xl text-center p-5 mt-5" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseOut}>
+					<div className=" text-3xl bg-blue-700 text-white text-center p-2 mt-5 rounded-xl" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseOut}>
 						<div>
 							{isPlaying ? (
 								getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)

@@ -3,11 +3,11 @@ import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { getFirstTwoWords, getWords } from "../utils/stringManipulation";
+import { getFirstTwoWords, getWords } from "../utils/pages/twitterReader/stringManipulation";
 import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import styles from "./twitterReader.module.css";
 import router from "next/router";
-import getCurrentTweet from "../utils/getCurrentTweet";
+import { getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
 
 export const WORDS_PER_TWEET = 1;
 const DEFAULT_TWEET_SPEED = 8;
@@ -67,35 +67,13 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
 			const fetchedPosts = await response.json();
 			const combinedPosts = [...posts, ...fetchedPosts];
-			setAllTweets((tweets: any) => {
-				const currentTweetId = localStorage.getItem("currentTweetId");
-				for (let i = 0; i < combinedPosts.length; i++) {
-					if (queryId ? combinedPosts[i].id === queryId : combinedPosts[i].id === currentTweetId) {
-						setCurrentTweet(i);
-						return combinedPosts;
-					}
-				}
-				setCurrentTweet(combinedPosts.length - 1);
-				return combinedPosts;
-			});
+			settingTweets(setAllTweets, setCurrentTweet, combinedPosts, queryId, setIsLoading)
 			setWithToken("tweets", combinedPosts, next_token);
-			setIsLoading(false);
-			console.log('hello?')
+			
 		}
 		const cachedTweets = getWithToken("tweets", next_token);
 		if (cachedTweets) {
-			setAllTweets((tweets: any) => {
-				const currentTweetId = localStorage.getItem("currentTweetId");
-				for (let i = 0; i < cachedTweets.length; i++) {
-					if (queryId ? cachedTweets[i].id === queryId : cachedTweets[i].id === currentTweetId) {
-						setCurrentTweet(i);
-						return cachedTweets;
-					}
-				}
-				setCurrentTweet(cachedTweets.length - 1);
-				return cachedTweets;
-			});
-			setIsLoading(false);
+			settingTweets(setAllTweets, setCurrentTweet, cachedTweets, queryId, setIsLoading)
 		} else {
 			fetchTweets();
 		}
@@ -129,6 +107,7 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		setCurrentPlaceInTweet(0);
 	}
 	function handleForward() {
+		if (currentTweet < 0) return;
 		if (allTweets[currentTweet - 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
 		setCurrentTweet(currentTweet - 1);
 		setCurrentPlaceInTweet(0);

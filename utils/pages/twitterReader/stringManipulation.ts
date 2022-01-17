@@ -1,4 +1,4 @@
-import { WORDS_PER_TWEET } from "../pages/twitterReader";
+import { WORDS_PER_TWEET } from "../../../pages/twitterReader";
 
 export function getFirstTwoWords(text: string) {
 	return text?.split(/\s+/).slice(0, 2).join(" ");

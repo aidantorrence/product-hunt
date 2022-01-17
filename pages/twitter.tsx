@@ -2,7 +2,7 @@
 import { GetStaticProps } from "next";
 import type { NextPage } from "next";
 import { useEffect, useState, useRef } from "react";
-import { getFirstTwoWords } from "../utils/stringManipulation";
+import { getFirstTwoWords } from "../utils/pages/twitterReader/stringManipulation";
 import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import router from "next/router";
 import { useRouter } from "next/router";
@@ -44,12 +44,12 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
 			const fetchedPosts = await response.json();
 			const combinedPosts  = [...posts, ...fetchedPosts];
-			setAllTweets((tweets: any) => [...tweets, ...fetchedPosts]);
+			setAllTweets(combinedPosts);
 			setWithToken("tweets", combinedPosts, next_token);
 		}
 		const cachedTweets = getWithToken("tweets", next_token);
 		if (cachedTweets) {
-			setAllTweets((tweets: any) => [...tweets, ...cachedTweets]);
+			setAllTweets(cachedTweets);
 		} else {
 			fetchTweets();
 		}
@@ -77,7 +77,7 @@ const twitter: NextPage = ({ posts, next_token }: any) => {
 		const scrollId = localStorage.getItem('scrollId');
 		for (const location of locationsRef.current) {
 			if (queryId ? location?.id === queryId : location?.id === scrollId) {
-				location.scrollIntoView();
+				window.scrollTo(0, location?.getBoundingClientRect().top + window.scrollY - 300);
 				break
 			}
 		};

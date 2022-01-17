@@ -7,6 +7,7 @@ import { getFirstTwoWords, getWords } from "../utils/stringManipulation";
 import { getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import styles from "./twitterReader.module.css";
 import router from "next/router";
+import getCurrentTweet from "../utils/getCurrentTweet";
 
 export const WORDS_PER_TWEET = 1;
 const DEFAULT_TWEET_SPEED = 8;
@@ -38,14 +39,14 @@ export const getStaticProps: GetStaticProps = async () => {
 };
 
 const twitterReader: NextPage = ({ posts, next_token }: any) => {
+	const router = useRouter();
+	const { id: queryId } = router.query;
 	const [allTweets, setAllTweets] = useState(posts);
-	const [currentTweet, setCurrentTweet] = useState(0);
+	const [currentTweet, setCurrentTweet] = useState(getCurrentTweet(posts, queryId));
 	const [currentPlaceInTweet, setCurrentPlaceInTweet] = useState(0);
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [currentTweetSpeed, setCurrentTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
 	const [prevTweetSpeed, setPrevTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
-	const router = useRouter();
-	const { id: queryId } = router.query;
 
 	const handleStart = useCallback(() => {
 		if (
@@ -64,38 +65,37 @@ const twitterReader: NextPage = ({ posts, next_token }: any) => {
 		async function fetchTweets() {
 			const response = await fetch("/api/posts", { method: "POST", body: next_token });
 			const fetchedPosts = await response.json();
+			const combinedPosts = [...posts, ...fetchedPosts];
 			setAllTweets((tweets: any) => {
-				const res = [...tweets, ...fetchedPosts];
 				const currentTweetId = localStorage.getItem("currentTweetId");
-				for (let i = 0; i < res.length; i++) {
-					if (queryId ? res[i].id === queryId : res[i].id === currentTweetId) {
+				for (let i = 0; i < combinedPosts.length; i++) {
+					if (queryId ? combinedPosts[i].id === queryId : combinedPosts[i].id === currentTweetId) {
 						setCurrentTweet(i);
-						return res
+						return combinedPosts
 					}
 				}
-				setCurrentTweet(res.length - 1);
-				return res;
+				setCurrentTweet(combinedPosts.length - 1);
+				return combinedPosts;
 			});
-			setWithToken("tweets", fetchedPosts, next_token);
+			setWithToken("tweets", combinedPosts, next_token);
 		}
 		const cachedTweets = getWithToken("tweets", next_token);
 		if (cachedTweets) {
 			setAllTweets((tweets: any) => {
-				const res = [...tweets, ...cachedTweets];
 				const currentTweetId = localStorage.getItem("currentTweetId");
-				for (let i = 0; i < res.length; i++) {
-					if (queryId ? res[i].id === queryId : res[i].id === currentTweetId) {
+				for (let i = 0; i < cachedTweets.length; i++) {
+					if (queryId ? cachedTweets[i].id === queryId : cachedTweets[i].id === currentTweetId) {
 						setCurrentTweet(i);
-						return res
+						return cachedTweets
 					}
 				}
-				setCurrentTweet(res.length - 1);
-				return res;
+				setCurrentTweet(cachedTweets.length - 1);
+				return cachedTweets;
 			});
 		} else {
 			fetchTweets();
 		}
-	}, [next_token, queryId]);
+	}, [next_token, queryId, posts]);
 
 	useEffect(() => {
 		let interval: any;

@@ -5,6 +5,7 @@ import { getFirstTwoWords } from "../utils/pages/twitterReader/stringManipulatio
 import { EXPIRY, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import { useRouter } from "next/router";
 import styles from './twitter.module.css'
+import Image from "next/image";
 
 const twitter: NextPage = () => {
 	const [allTweets, setAllTweets] = useState([] as any );
@@ -71,7 +72,12 @@ const twitter: NextPage = () => {
 			<tbody className="flex flex-col max-w-4xl">
 				{allTweets.slice().reverse().map((post: any, idx: any) => (
 					<tr className={styles.tweet} key={post.id}>
-						<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
+						<td className="pl-8 w-64 text-xl">
+							<div className="mb-2">
+							{getFirstTwoWords(post.author)}
+							</div>
+							<Image alt="post" src={post.profile_image_url} className="rounded-full" width={64} height={64} />
+						</td>
 						<td role="button" onClick={handlePostClick} id={post.id} ref={el => locationsRef.current[idx] = el} className="text-xl">{post.text}</td>
 					</tr>
 				))}

@@ -7,7 +7,7 @@ import { EXPIRY, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from
 import styles from "./twitterReader.module.css";
 import { getCurrentInterval, getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
 import { motion } from "framer-motion";
-
+import Image from "next/image";
 
 export const WORDS_PER_TWEET = 1;
 export const DEFAULT_TWEET_SPEED = 10;
@@ -131,18 +131,30 @@ const twitterReader: NextPage = () => {
 							</button>
 							<button onClick={increaseSpeed}> Increase </button>
 						</div>
-						<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
-
 						<div>
 							<div>
 								{isPlaying ? (
 									<>
 										<div className="relative">
-											<div className="text-white z-30 text-3xl leading-none text-center p-2 mt-5" role="button" onClick={handlePlay}>
+											<div
+												className="text-white z-30 text-3xl leading-none text-center p-2 mt-5"
+												role="button"
+												onClick={handlePlay}
+											>
 												{getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)}
 											</div>
 											<motion.div
-												className={[styles.mainTweet,"bg-blue-700", "rounded-xl", "absolute", "h-full", "w-full", "top-0", "left-0", "-z-20"].join(" ")}
+												className={[
+													styles.mainTweet,
+													"bg-blue-700",
+													"rounded-xl",
+													"absolute",
+													"h-full",
+													"w-full",
+													"top-0",
+													"left-0",
+													"-z-20",
+												].join(" ")}
 												key={getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)}
 												onMouseEnter={handleMouseEnter}
 												onMouseLeave={handleMouseOut}
@@ -155,12 +167,19 @@ const twitterReader: NextPage = () => {
 									</>
 								) : (
 									<>
-										<div className={[styles.iFrameAndTweet, "flex", "flex-col", "items-center", "relative"].join(" ")}>
-											<iframe
-												className={styles.hiddenIFrame}
-												src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}
-											></iframe>
-											<div className={[styles.tweet, "text-center max-w-xl text-4xl"].join(" ")}>
+										<div className="flex border mt-2 mb-2 rounded-lg hover:bg-blue-50 hover:transition">
+											<div className="flex flex-col items-center p-2 pr-4 border-r">
+												<div className="text-4xl pb-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
+												<Image
+													alt="post"
+													layout="fixed"
+													src={allTweets[currentTweet]?.profile_image_url}
+													className="rounded-full"
+													width={64}
+													height={64}
+												/>
+											</div>
+											<div className={[styles.tweet, "max-w-xl text-xl p-2 pl-4"].join(" ")}>
 												{cleanText(allTweets[currentTweet]?.text)}
 											</div>
 										</div>

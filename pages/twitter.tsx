@@ -73,12 +73,12 @@ const twitter: NextPage = () => {
 				{allTweets.slice().reverse().map((post: any, idx: any) => (
 					<tr className={styles.tweet} key={post.id} role="button" onClick={handlePostClick} >
 						<td className="pl-8 w-64 text-xl">
-							<div className="mb-2">
+							<Image alt="post" src={post.profile_image_url} layout="fixed" className="rounded-full" width={64} height={64} />
+							<div className="mb-2 text-gray-800">
 							{getFirstTwoWords(post.author)}
 							</div>
-							<Image alt="post" src={post.profile_image_url} className="rounded-full" width={64} height={64} />
 						</td>
-						<td role="button" id={post.id} ref={el => locationsRef.current[idx] = el} className="text-xl">{post.text}</td>
+						<td role="button" id={post.id} ref={el => locationsRef.current[idx] = el} className="text-xl text-gray-800">{post.text}</td>
 					</tr>
 				))}
 			</tbody>

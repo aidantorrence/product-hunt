@@ -145,7 +145,6 @@ const twitterReader: NextPage = () => {
 							<div>
 								<div className="flex border mt-2 mb-2 rounded-lg hover:bg-blue-50 hover:transition">
 									<div className="flex flex-col items-center p-2 border-r">
-										<div className="text-4xl pb-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 										<Image
 											alt="post"
 											layout="fixed"
@@ -154,8 +153,9 @@ const twitterReader: NextPage = () => {
 											width={64}
 											height={64}
 										/>
+										<div className="text-2xl pt-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 									</div>
-									<div className={[styles.tweet, "max-w-xl text-xl p-2"].join(" ")}>
+									<div className={[styles.tweet, "max-w-xl text-xl p-2 flex items-center"].join(" ")}>
 										{cleanText(allTweets[currentTweet]?.text)}
 									</div>
 								</div>

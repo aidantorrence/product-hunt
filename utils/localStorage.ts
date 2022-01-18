@@ -52,3 +52,13 @@ export function getWithToken(key: string, token: string) {
 	}
 	return item.value
 }
+
+export function getHoursRemaining() {
+	const now = new Date().getTime()
+	const tweetJSON = localStorage.getItem('tweets')
+	if (!tweetJSON) {
+		return null
+	}
+	const expiry = JSON.parse(tweetJSON)?.expiry;
+	return Math.floor((expiry - now) / 1000 / 60 / 60);
+}

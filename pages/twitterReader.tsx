@@ -3,7 +3,7 @@ import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { cleanText, getFirstTwoWords, getWords } from "../utils/pages/twitterReader/stringManipulation";
-import { EXPIRY, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
+import { EXPIRY, getHoursRemaining, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import styles from "./twitterReader.module.css";
 import { getCurrentInterval, getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
 import { motion } from "framer-motion";
@@ -167,18 +167,18 @@ const twitterReader: NextPage = () => {
 			) : (
 				!isLoading && (
 					<>
-						<Image
+						{allTweets[currentTweet] && <Image
 							alt="post"
 							layout="fixed"
-							src={allTweets[currentTweet]?.profile_image_url  || 'https://pbs.twimg.com/profile_images/1372896650138648582/-wPcrIcf_normal.jpg'}
+							src={allTweets[currentTweet]?.profile_image_url}
 							className="rounded-full"
 							width={64}
 							height={64}
-						/>
+						/>}
 						<div className="text-lg text-gray-100 mt-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 						<div className="relative mt-24">
 							<div className="text-white z-30 text-3xl leading-none text-center p-2" role="button" onClick={handlePlay}>
-								{getWords(allTweets[currentTweet]?.text, currentPlaceInTweet) || 'END'}
+								{getWords(allTweets[currentTweet]?.text, currentPlaceInTweet) || `get new tweets in ${getHoursRemaining()} hours`}
 							</div>
 							<motion.div
 								className={[

@@ -11,8 +11,14 @@ export function getWords(text: string | undefined, placeInText: number) {
 	return slice.join(" ");
 }
 
+export function cleanText(text: any) {
+    if (!text) return "";
+    return text.replaceAll('&amp;','&').replaceAll('-&gt;', '')
+}
+
 export function splitByNCharacters(text: string, n: number) {
-	let words = text.replace('&amp;','&').split(/[\s]+/).map((word) => {
+    text = cleanText(text);
+	let words = text.split(/[\s]+/).map((word) => {
         if (word.toLowerCase().includes("https://")) {
             return "[LINK]";
         } else {

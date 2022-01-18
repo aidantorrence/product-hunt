@@ -24,7 +24,7 @@ export function settingTweets(setAllTweets: any, setCurrentTweet: any, tweets: a
 
 export function getCurrentInterval(allTweets: any, currentTweet: any, currentPlaceInTweet: any, currentTweetSpeed: any, getWords: any ) {
     const isLastInPlace = !getWords(allTweets[currentTweet]?.text, currentPlaceInTweet + WORDS_PER_TWEET)
-    const includesRT = allTweets[currentTweet]?.text.includes("RT")
+    const includesRT = allTweets[currentTweet]?.text.includes("RT ")
 
     const includesPunctuation = getWords(allTweets[currentTweet]?.text, currentPlaceInTweet).match(/[@!.,?:;]/)
 

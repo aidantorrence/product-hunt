@@ -2,15 +2,17 @@
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import { getFirstTwoWords, getWords } from "../utils/pages/twitterReader/stringManipulation";
+import { cleanText, getFirstTwoWords, getWords } from "../utils/pages/twitterReader/stringManipulation";
 import { EXPIRY, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import styles from "./twitterReader.module.css";
 import { getCurrentInterval, getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
+import { motion } from "framer-motion";
+
 
 export const WORDS_PER_TWEET = 1;
 export const DEFAULT_TWEET_SPEED = 10;
 export const HOVER_TWEET_SPEED = 3;
-export const PUNCTUATION_TWEET_SPEED = 6
+export const PUNCTUATION_TWEET_SPEED = 6;
 
 const twitterReader: NextPage = () => {
 	const router = useRouter();
@@ -40,13 +42,12 @@ const twitterReader: NextPage = () => {
 		async function fetchTweets() {
 			const response = await fetch("/api/posts", { method: "POST" });
 			const fetchedPosts = await response.json();
-			settingTweets(setAllTweets, setCurrentTweet, fetchedPosts, queryId, setIsLoading)
+			settingTweets(setAllTweets, setCurrentTweet, fetchedPosts, queryId, setIsLoading);
 			setWithExpiry("tweets", fetchedPosts, EXPIRY);
-			
 		}
 		const cachedTweets = getWithExpiry("tweets");
 		if (cachedTweets) {
-			settingTweets(setAllTweets, setCurrentTweet, cachedTweets, queryId, setIsLoading)
+			settingTweets(setAllTweets, setCurrentTweet, cachedTweets, queryId, setIsLoading);
 		} else {
 			fetchTweets();
 		}
@@ -55,12 +56,9 @@ const twitterReader: NextPage = () => {
 	useEffect(() => {
 		let interval: any;
 		if (isPlaying && currentTweet >= 0) {
-			interval = setInterval(
-				() => {
-					handleStart();
-				},
-				getCurrentInterval(allTweets, currentTweet, currentPlaceInTweet, currentTweetSpeed, getWords )
-			);
+			interval = setInterval(() => {
+				handleStart();
+			}, getCurrentInterval(allTweets, currentTweet, currentPlaceInTweet, currentTweetSpeed, getWords));
 		}
 		return () => clearInterval(interval);
 	}, [isPlaying, handleStart, currentTweetSpeed, currentPlaceInTweet, allTweets, currentTweet]);
@@ -113,49 +111,67 @@ const twitterReader: NextPage = () => {
 
 	return (
 		<>
-			{ !isLoading && <div className="">
-				<div className="divider pt-5"></div>
-				<div className="flex flex-col mt-64 items-center h-screen ">
-					<div className="flex flex-row justify-center">
-						<button onClick={decreaseSpeed}> Decrease </button>
-						<button onClick={handleBack} className="w-32">
-							Prev
-						</button>
-						<div className={[styles.playpause, "flex", "flex-col", "items-center", "relative"].join(" ")}>
-							<div className={styles.tooltip}>{currentTweet + 1} tweets left</div>
-							<button onClick={handlePlay} className="w-32">
-								Play/Pause({currentTweetSpeed})
+			{!isLoading && (
+				<div className="">
+					<div className="divider pt-5"></div>
+					<div className="flex flex-col mt-64 items-center h-screen ">
+						<div className="flex flex-row justify-center">
+							<button onClick={decreaseSpeed}> Decrease </button>
+							<button onClick={handleBack} className="w-32">
+								Prev
 							</button>
+							<div className={[styles.playpause, "flex", "flex-col", "items-center", "relative"].join(" ")}>
+								<div className={styles.tooltip}>{currentTweet + 1} tweets left</div>
+								<button onClick={handlePlay} className="w-32">
+									Play/Pause({currentTweetSpeed})
+								</button>
+							</div>
+							<button onClick={handleForward} className="w-32">
+								Next
+							</button>
+							<button onClick={increaseSpeed}> Increase </button>
 						</div>
-						<button onClick={handleForward} className="w-32">
-							Next
-						</button>
-						<button onClick={increaseSpeed}> Increase </button>
-					</div>
-					<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
+						<div className="mt-8 text-4xl">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 
-					<div className=" text-3xl bg-blue-700 text-white text-center p-2 mt-5 rounded-xl" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseOut}>
 						<div>
-							{isPlaying ? (
-								getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)
-							) : (
-								<>
-									<div className={[styles.iFrameAndTweet, "flex", "flex-col", "items-center", "relative"].join(" ")}>
-										<iframe
-											className={styles.hiddenIFrame}
-											src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}
-										></iframe>
-										<div className={[styles.tweet, "max-w-xl text-4xl"].join(" ")}>
-											{allTweets[currentTweet]?.text}
+							<div>
+								{isPlaying ? (
+									<>
+										<div className="relative">
+											<div className="text-white z-30 text-3xl leading-none text-center p-2 mt-5" role="button" onClick={handlePlay}>
+												{getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)}
+											</div>
+											<motion.div
+												className={[styles.mainTweet,"bg-blue-700", "rounded-xl", "absolute", "h-full", "w-full", "top-0", "left-0", "-z-20"].join(" ")}
+												key={getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)}
+												onMouseEnter={handleMouseEnter}
+												onMouseLeave={handleMouseOut}
+												initial={{ scale: 1.03 }}
+												animate={{ scale: 1 }}
+												transition={{ duration: 0.1 }}
+											></motion.div>
 										</div>
-									</div>
-								</>
-							)}
+										<div className={[styles.overlay, "bg-gray-800"].join(" ")}></div>
+									</>
+								) : (
+									<>
+										<div className={[styles.iFrameAndTweet, "flex", "flex-col", "items-center", "relative"].join(" ")}>
+											<iframe
+												className={styles.hiddenIFrame}
+												src={`https://twitframe.com/show?url=https://twitter.com/i/status/${allTweets[currentTweet]?.id}`}
+											></iframe>
+											<div className={[styles.tweet, "text-center max-w-xl text-4xl"].join(" ")}>
+												{cleanText(allTweets[currentTweet]?.text)}
+											</div>
+										</div>
+									</>
+								)}
+							</div>
 						</div>
+						{currentTweet >= 0 ? <button onClick={handleBackTwitter}>back to twitter</button> : `DONE`}
 					</div>
-					{currentTweet >= 0 ? <button onClick={handleBackTwitter}>back to twitter</button> : `DONE`}
 				</div>
-			</div>}
+			)}
 		</>
 	);
 };

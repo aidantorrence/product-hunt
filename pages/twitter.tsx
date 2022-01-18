@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { getFirstTwoWords } from "../utils/pages/twitterReader/stringManipulation";
 import { EXPIRY, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
 import { useRouter } from "next/router";
+import styles from './twitter.module.css'
 
 const twitter: NextPage = () => {
 	const [allTweets, setAllTweets] = useState([] as any );
@@ -68,12 +69,8 @@ const twitter: NextPage = () => {
 	return (
 		<table className="m-auto">
 			<tbody className="flex flex-col max-w-4xl">
-				<tr>
-					<th className="pl-8 w-64">User</th>
-					<th>Tweet</th>
-				</tr>
 				{allTweets.slice().reverse().map((post: any, idx: any) => (
-					<tr className="py-2" key={post.id}>
+					<tr className={styles.tweet} key={post.id}>
 						<td className="pl-8 w-64 text-xl">{getFirstTwoWords(post.author)}</td>
 						<td role="button" onClick={handlePostClick} id={post.id} ref={el => locationsRef.current[idx] = el} className="text-xl">{post.text}</td>
 					</tr>

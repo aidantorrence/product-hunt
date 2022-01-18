@@ -67,6 +67,12 @@ const twitterReader: NextPage = () => {
 		setIsPlaying(!isPlaying);
 		setCurrentPlaceInTweet(0);
 	}
+	function handleStop() {
+		if (isPlaying) {
+			setCurrentPlaceInTweet(0);
+			setIsPlaying(false);
+		}
+	}
 
 	function handleBack() {
 		if (currentTweet < 0) setIsPlaying(false);
@@ -110,11 +116,15 @@ const twitterReader: NextPage = () => {
 	}
 
 	return (
-		<>
-			{!isLoading && (
+		<div
+			className={["flex", "flex-col", "justify-center", "items-center", styles.main].join(" ")}
+			role={isPlaying ? "button" : "div"}
+			onClick={handleStop}
+		>
+			{!isLoading && !isPlaying ? (
 				<div className="">
 					<div className="divider pt-5"></div>
-					<div className="flex flex-col mt-64 items-center h-screen ">
+					<div className="flex flex-col items-center ">
 						<div className="flex flex-row justify-center">
 							<button onClick={decreaseSpeed}> Decrease </button>
 							<button onClick={handleBack} className="w-32">
@@ -133,65 +143,68 @@ const twitterReader: NextPage = () => {
 						</div>
 						<div>
 							<div>
-								{isPlaying ? (
-									<>
-										<div className="relative">
-											<div
-												className="text-white z-30 text-3xl leading-none text-center p-2 mt-5"
-												role="button"
-												onClick={handlePlay}
-											>
-												{getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)}
-											</div>
-											<motion.div
-												className={[
-													styles.mainTweet,
-													"bg-blue-700",
-													"rounded-xl",
-													"absolute",
-													"h-full",
-													"w-full",
-													"top-0",
-													"left-0",
-													"-z-20",
-												].join(" ")}
-												key={getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)}
-												onMouseEnter={handleMouseEnter}
-												onMouseLeave={handleMouseOut}
-												initial={{ scale: 1.03 }}
-												animate={{ scale: 1 }}
-												transition={{ duration: 0.1 }}
-											></motion.div>
-										</div>
-										<div className={[styles.overlay, "bg-gray-800"].join(" ")}></div>
-									</>
-								) : (
-									<>
-										<div className="flex border mt-2 mb-2 rounded-lg hover:bg-blue-50 hover:transition">
-											<div className="flex flex-col items-center p-2 pr-4 border-r">
-												<div className="text-4xl pb-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
-												<Image
-													alt="post"
-													layout="fixed"
-													src={allTweets[currentTweet]?.profile_image_url}
-													className="rounded-full"
-													width={64}
-													height={64}
-												/>
-											</div>
-											<div className={[styles.tweet, "max-w-xl text-xl p-2 pl-4"].join(" ")}>
-												{cleanText(allTweets[currentTweet]?.text)}
-											</div>
-										</div>
-									</>
-								)}
+								<div className="flex border mt-2 mb-2 rounded-lg hover:bg-blue-50 hover:transition">
+									<div className="flex flex-col items-center p-2 border-r">
+										<div className="text-4xl pb-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
+										<Image
+											alt="post"
+											layout="fixed"
+											src={allTweets[currentTweet]?.profile_image_url || 'https://pbs.twimg.com/profile_images/1372896650138648582/-wPcrIcf_normal.jpg'}
+											className="rounded-full"
+											width={64}
+											height={64}
+										/>
+									</div>
+									<div className={[styles.tweet, "max-w-xl text-xl p-2"].join(" ")}>
+										{cleanText(allTweets[currentTweet]?.text)}
+									</div>
+								</div>
 							</div>
 						</div>
 						{currentTweet >= 0 ? <button onClick={handleBackTwitter}>back to twitter</button> : `DONE`}
 					</div>
 				</div>
+			) : (
+				!isLoading && (
+					<>
+						<Image
+							alt="post"
+							layout="fixed"
+							src={allTweets[currentTweet]?.profile_image_url  || 'https://pbs.twimg.com/profile_images/1372896650138648582/-wPcrIcf_normal.jpg'}
+							className="rounded-full"
+							width={64}
+							height={64}
+						/>
+						<div className="text-lg text-gray-100 mt-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
+						<div className="relative mt-24">
+							<div className="text-white z-30 text-3xl leading-none text-center p-2" role="button" onClick={handlePlay}>
+								{getWords(allTweets[currentTweet]?.text, currentPlaceInTweet) || 'END'}
+							</div>
+							<motion.div
+								className={[
+									styles.mainTweet,
+									"bg-blue-700",
+									"rounded-xl",
+									"absolute",
+									"h-full",
+									"w-full",
+									"top-0",
+									"left-0",
+									"-z-20",
+								].join(" ")}
+								key={getWords(allTweets[currentTweet]?.text, currentPlaceInTweet)}
+								onMouseEnter={handleMouseEnter}
+								onMouseLeave={handleMouseOut}
+								initial={{ scale: 1.03 }}
+								animate={{ scale: 1 }}
+								transition={{ duration: 0.1 }}
+							></motion.div>
+						</div>
+						<div className={[styles.overlay, "bg-gray-800"].join(" ")}></div>
+					</>
+				)
 			)}
-		</>
+		</div>
 	);
 };
 

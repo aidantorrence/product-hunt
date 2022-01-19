@@ -25,6 +25,20 @@ const twitterReader: NextPage = () => {
 	const [prevTweetSpeed, setPrevTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
 	const [isLoading, setIsLoading] = useState(true);
 
+	const handleBack = useCallback(() => {
+		if (currentTweet < 0) setIsPlaying(false);
+		if (allTweets[currentTweet + 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet + 1]?.id);
+		setCurrentTweet(currentTweet + 1);
+		setCurrentPlaceInTweet(0);
+	}, [allTweets, currentTweet])
+
+	const handleForward = useCallback(() => {
+		if (currentTweet < 0) return;
+		if (allTweets[currentTweet - 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
+		setCurrentTweet(currentTweet - 1);
+		setCurrentPlaceInTweet(0);
+	}, [allTweets, currentTweet])
+
 	const handleStart = useCallback(() => {
 		if (
 			!allTweets[currentTweet]?.text.includes("RT ") &&
@@ -37,6 +51,18 @@ const twitterReader: NextPage = () => {
 			setCurrentPlaceInTweet(0);
 		}
 	}, [allTweets, currentTweet, currentPlaceInTweet]);
+
+	const handleKeyDown = useCallback((e: any) => {
+		if (e.key === " ") {
+			setIsPlaying(!isPlaying);
+		}
+		if (e.key === "ArrowLeft") {
+			handleBack()
+		}
+		if (e.key === "ArrowRight") {
+			handleForward()
+		}
+	}, [isPlaying, handleBack, handleForward]);
 
 	useEffect(() => {
 		async function fetchTweets() {
@@ -63,6 +89,11 @@ const twitterReader: NextPage = () => {
 		return () => clearInterval(interval);
 	}, [isPlaying, handleStart, currentTweetSpeed, currentPlaceInTweet, allTweets, currentTweet]);
 
+	useEffect(() => {
+		document.addEventListener("keydown", handleKeyDown);
+		return () => document.removeEventListener("keydown", handleKeyDown);
+	  }, [handleKeyDown]);
+
 	function handlePlay() {
 		setIsPlaying(!isPlaying);
 		setCurrentPlaceInTweet(0);
@@ -72,19 +103,6 @@ const twitterReader: NextPage = () => {
 			setCurrentPlaceInTweet(0);
 			setIsPlaying(false);
 		}
-	}
-
-	function handleBack() {
-		if (currentTweet < 0) setIsPlaying(false);
-		if (allTweets[currentTweet + 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet + 1]?.id);
-		setCurrentTweet(currentTweet + 1);
-		setCurrentPlaceInTweet(0);
-	}
-	function handleForward() {
-		if (currentTweet < 0) return;
-		if (allTweets[currentTweet - 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
-		setCurrentTweet(currentTweet - 1);
-		setCurrentPlaceInTweet(0);
 	}
 
 	function handleMouseEnter() {

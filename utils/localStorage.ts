@@ -1,4 +1,4 @@
-export const EXPIRY = 3600 * 24;
+export const EXPIRY = 3600 * 16;
 
 export function setWithExpiry(key: string, value: any, ttl: number) {
 	const now = new Date()

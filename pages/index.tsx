@@ -15,7 +15,7 @@ const Home: NextPage<Props> = () => {
 			const fetchedPosts = await productHuntFetch(count);
 			const formattedPosts = fetchedPosts.posts.edges.map((edge: { node: Post[] }) => edge.node);
 			setPosts(formattedPosts);
-			setWithExpiry(`posts-${DateTime.now().minus({ days: count }).toISODate()}`, formattedPosts, EXPIRY);
+			if (count !== 0) setWithExpiry(`posts-${DateTime.now().minus({ days: count }).toISODate()}`, formattedPosts, EXPIRY);
 		}
 		const cachedPosts = getWithExpiry(`posts-${DateTime.now().minus({ days: count }).toISODate()}`);
 		if (cachedPosts) {

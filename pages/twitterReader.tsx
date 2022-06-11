@@ -3,7 +3,14 @@ import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { cleanText, getFirstTwoWords, getWords } from "../utils/pages/twitterReader/stringManipulation";
-import { EXPIRY, getHoursRemaining, getWithExpiry, getWithToken, setWithExpiry, setWithToken } from "../utils/localStorage";
+import {
+	EXPIRY,
+	getHoursRemaining,
+	getWithExpiry,
+	getWithToken,
+	setWithExpiry,
+	setWithToken,
+} from "../utils/localStorage";
 import styles from "./twitterReader.module.css";
 import { getCurrentInterval, getCurrentTweet, settingTweets } from "../utils/pages/twitterReader/twitterReader";
 import { motion } from "framer-motion";
@@ -24,20 +31,25 @@ const twitterReader: NextPage = () => {
 	const [currentTweetSpeed, setCurrentTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
 	const [prevTweetSpeed, setPrevTweetSpeed] = useState(DEFAULT_TWEET_SPEED);
 	const [isLoading, setIsLoading] = useState(true);
+	const [currentWordIdx, setCurrentWordIdx] = useState(0);
 
 	const handleBack = useCallback(() => {
 		if (currentTweet < 0) setIsPlaying(false);
 		if (allTweets[currentTweet + 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet + 1]?.id);
 		setCurrentTweet(currentTweet + 1);
 		setCurrentPlaceInTweet(0);
-	}, [allTweets, currentTweet])
+		setCurrentWordIdx(0);
+	}, [allTweets, currentTweet]);
 
 	const handleForward = useCallback(() => {
 		if (currentTweet < 0) return;
 		if (allTweets[currentTweet - 1]) localStorage.setItem("currentTweetId", allTweets[currentTweet - 1]?.id);
 		setCurrentTweet(currentTweet - 1);
 		setCurrentPlaceInTweet(0);
-	}, [allTweets, currentTweet])
+		setCurrentWordIdx(0);
+	}, [allTweets, currentTweet]);
+
+	const handleReset = () => setCurrentWordIdx(0);
 
 	const handleStart = useCallback(() => {
 		if (
@@ -52,17 +64,23 @@ const twitterReader: NextPage = () => {
 		}
 	}, [allTweets, currentTweet, currentPlaceInTweet]);
 
-	const handleKeyDown = useCallback((e: any) => {
-		if (e.key === " ") {
-			setIsPlaying(!isPlaying);
-		}
-		if (e.key === "ArrowLeft") {
-			handleBack()
-		}
-		if (e.key === "ArrowRight") {
-			handleForward()
-		}
-	}, [isPlaying, handleBack, handleForward]);
+	const handleKeyDown = useCallback(
+		(e: any) => {
+			if (e.key === " ") {
+				setIsPlaying(!isPlaying);
+			}
+			if (e.key === "j") {
+				handleBack();
+			}
+			if (e.key === "k") {
+				handleForward();
+			}
+			if (e.key === "r") {
+				handleReset();
+			}
+		},
+		[isPlaying, handleBack, handleForward]
+	);
 
 	useEffect(() => {
 		async function fetchTweets() {
@@ -90,9 +108,17 @@ const twitterReader: NextPage = () => {
 	}, [isPlaying, handleStart, currentTweetSpeed, currentPlaceInTweet, allTweets, currentTweet]);
 
 	useEffect(() => {
+		const interval = setInterval(() => {
+			setCurrentWordIdx((idx) => idx + 1);
+		}, 100);
+
+		return () => clearInterval(interval);
+	}, []);
+
+	useEffect(() => {
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
-	  }, [handleKeyDown]);
+	}, [handleKeyDown]);
 
 	function handlePlay() {
 		setIsPlaying(!isPlaying);
@@ -133,6 +159,11 @@ const twitterReader: NextPage = () => {
 		);
 	}
 
+	const currentTextArr = cleanText(allTweets[currentTweet]?.text).split(" ");
+	const wordsBefore = currentTextArr.slice(0, currentWordIdx).join(" ") + " ";
+	const currentWord = currentTextArr[currentWordIdx];
+	const wordsAfter = " " + currentTextArr.slice(currentWordIdx + 1).join(" ");
+
 	return (
 		<div
 			className={["flex", "flex-col", "justify-center", "items-center", styles.main].join(" ")}
@@ -166,7 +197,10 @@ const twitterReader: NextPage = () => {
 										<Image
 											alt="post"
 											layout="fixed"
-											src={allTweets[currentTweet]?.profile_image_url || 'https://pbs.twimg.com/profile_images/1372896650138648582/-wPcrIcf_normal.jpg'}
+											src={
+												allTweets[currentTweet]?.profile_image_url ||
+												"https://pbs.twimg.com/profile_images/1372896650138648582/-wPcrIcf_normal.jpg"
+											}
 											className="rounded-full"
 											width={64}
 											height={64}
@@ -174,7 +208,12 @@ const twitterReader: NextPage = () => {
 										<div className="text-2xl pt-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 									</div>
 									<div className={[styles.tweet, "max-w-xl text-xl p-2 flex items-center"].join(" ")}>
-										{cleanText(allTweets[currentTweet]?.text)}
+										<p>
+											<span style={{ padding: "0px 3px" }}>{wordsBefore}</span>
+											<span style={{ padding: "0px 3px", backgroundColor: "blue", color: "white" }}>{currentWord}</span>
+											<span style={{ padding: "0px 3px" }}>{wordsAfter}</span>
+										</p>
+										{/* {cleanText(allTweets[currentTweet]?.text)} */}
 									</div>
 								</div>
 							</div>
@@ -185,18 +224,21 @@ const twitterReader: NextPage = () => {
 			) : (
 				!isLoading && (
 					<>
-						{allTweets[currentTweet] && <Image
-							alt="post"
-							layout="fixed"
-							src={allTweets[currentTweet]?.profile_image_url}
-							className="rounded-full"
-							width={64}
-							height={64}
-						/>}
+						{allTweets[currentTweet] && (
+							<Image
+								alt="post"
+								layout="fixed"
+								src={allTweets[currentTweet]?.profile_image_url}
+								className="rounded-full"
+								width={64}
+								height={64}
+							/>
+						)}
 						<div className="text-lg text-gray-100 mt-2">{getFirstTwoWords(allTweets[currentTweet]?.author)}</div>
 						<div className="relative mt-24">
 							<div className="text-white z-30 text-3xl leading-none text-center p-2" role="button" onClick={handlePlay}>
-								{getWords(allTweets[currentTweet]?.text, currentPlaceInTweet) || `get new tweets in ${getHoursRemaining()} hours`}
+								{getWords(allTweets[currentTweet]?.text, currentPlaceInTweet) ||
+									`get new tweets in ${getHoursRemaining()} hours`}
 							</div>
 							<motion.div
 								className={[

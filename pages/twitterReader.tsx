@@ -84,7 +84,7 @@ const twitterReader: NextPage = () => {
 			if (e.key === "r") {
 				handleReset();
 			}
-			if (e.key === "p") {
+			if (e.key === ";") {
 				setIsReading(!isReading);
 			}
 		},

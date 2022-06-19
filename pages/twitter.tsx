@@ -50,7 +50,7 @@ const twitter: NextPage = () => {
 	useEffect(() => {
 		const scrollId = localStorage.getItem('scrollId');
 		for (const location of locationsRef.current) {
-			if (queryId ? location?.id === queryId : location?.id === scrollId) {
+			if (location?.id === scrollId) {
 				window.scrollTo(0, location?.getBoundingClientRect().top + window.scrollY - 300);
 				break
 			}

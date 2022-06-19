@@ -20,6 +20,7 @@ export const WORDS_PER_TWEET = 1;
 export const DEFAULT_TWEET_SPEED = 10;
 export const HOVER_TWEET_SPEED = 3;
 export const PUNCTUATION_TWEET_SPEED = 6;
+export const CHARS = 20;
 
 const twitterReader: NextPage = () => {
 	const router = useRouter();
@@ -34,10 +35,10 @@ const twitterReader: NextPage = () => {
 	const [currentWordIdx, setCurrentWordIdx] = useState(0);
 	const [isReading, setIsReading] = useState(true)
 
-	const currentTextArr = cleanText(allTweets[currentTweet]?.text).split(" ");
-	const wordsBefore = currentTextArr.slice(0, currentWordIdx).join(" ") + " ";
-	const currentWord = currentTextArr[currentWordIdx];
-	const wordsAfter = " " + currentTextArr.slice(currentWordIdx + 1).join(" ");
+	const currentText = cleanText(allTweets[currentTweet]?.text)
+	const prevWords = currentText.slice(0, currentWordIdx * CHARS);
+  const currentWords = currentText.slice(currentWordIdx * CHARS, (currentWordIdx + 1) * CHARS);
+	const nextWords = currentText.slice((currentWordIdx + 1) * CHARS);
 
 	const handleBack = useCallback(() => {
 		if (currentTweet < 0) setIsPlaying(false);
@@ -120,20 +121,23 @@ const twitterReader: NextPage = () => {
 		const interval = setInterval(() => {
 			if (isReading) {
 				setCurrentWordIdx((idx) => idx + 1);
-				console.log(currentWordIdx, currentTextArr)
-				if (currentWordIdx > currentTextArr.length) {
+				if (currentWordIdx * CHARS  > currentText.length) {
 					handleForward();
 				}
 			}
-		}, 50);
+		}, 250);
 
 		return () => clearInterval(interval);
-	}, [currentTextArr, currentWordIdx, handleForward, isReading]);
+	}, [currentText, currentWordIdx, handleForward, isReading]);
 
 	useEffect(() => {
 		document.addEventListener("keydown", handleKeyDown);
 		return () => document.removeEventListener("keydown", handleKeyDown);
 	}, [handleKeyDown]);
+
+	useEffect(() => {
+		if (allTweets[currentTweet]?.id) localStorage.setItem('scrollId', allTweets[currentTweet]?.id)
+	}, [allTweets, currentTweet])
 
 	function handlePlay() {
 		setIsPlaying(!isPlaying);
@@ -219,9 +223,9 @@ const twitterReader: NextPage = () => {
 									</div>
 									<div className={[styles.tweet, "max-w-xl text-xl p-2 flex items-center"].join(" ")}>
 										<p>
-											<span style={{ padding: "3px 0px" }}>{wordsBefore}</span>
-											<span style={{ padding: "3px 0px", backgroundColor: "blue", color: "white" }}>{currentWord}</span>
-											<span style={{ padding: "3px 0px" }}>{wordsAfter}</span>
+											<span style={{ padding: "3px 0px" }}>{prevWords}</span>
+											<span style={{ padding: "3px 0px", backgroundColor: "blue", color: "white" }}>{currentWords}</span>
+											<span style={{ padding: "3px 0px" }}>{nextWords}</span>
 										</p>
 										{/* {cleanText(allTweets[currentTweet]?.text)} */}
 									</div>
